@@ -1,12 +1,20 @@
-const { ref, uploadBytes, getDownloadURL } = require("firebase/storage");
-
 const { Product } = require("../models/product.model");
 const { ProductImg } = require("../models/productImg.model");
 
 const { catchAsync } = require("../utils/catchAsync.util");
-const { storage } = require("../utils/firebase.util");
 
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { Hash } = require("@smithy/hash-node");
+const { parseUrl } = require("@smithy/url-parser");
+const { fromIni } = require("@aws-sdk/credential-provider-node");
+const { HttpRequest } = require("@smithy/protocol-http");
+const { S3RequestPresigner } = require("@aws-sdk/s3-request-presigner");
+const { formatUrl } = require("@aws-sdk/util-format-url");
+const region = process.env.REGION;
+const credentials = {
+    accessKeyId: process.env.ACCESS_KEY_ID_S3,
+    secretAccessKey: process.env.SECRET_ACCESS_KEY_S3,
+};
 
 const createProduct = catchAsync(async (req, res, next) => {
     const { title, description, price, categoryId, quantity } = req.body;
@@ -22,13 +30,9 @@ const createProduct = catchAsync(async (req, res, next) => {
     });
 
     if (req.files.length > 0) {
-        const region = "us-east-2";
         const client = new S3Client({
             region,
-            credentials: {
-                accessKeyId: process.env.ACCESS_KEY_ID_S3,
-                secretAccessKey: process.env.SECRET_ACCESS_KEY_S3,
-            },
+            credentials,
         }); // Reemplaza "TU_REGION" con tu región de AWS S3
         const Bucket = "mybucket-smart-mark"; // Reemplaza "NOMBRE_DE_TU_BUCKET" con el nombre de tu bucket en AWS S3
         const filesPromises = req.files.map(async file => {
@@ -75,21 +79,30 @@ const getAllProduct = catchAsync(async (req, res, next) => {
         ],
     });
 
-    // const newpro = products.map(async product => {
-    //     if (product.productImgs.length > 0) {
-    //         const productImgsPromises = product.productImgs.map(
-    //             async productImg => {
-    //                 const imgRef = ref(storage, productImg.imgUrl);
+    const newpro = products.map(async product => {
+        if (product.productImgs.length > 0) {
+            const productImgsPromises = product.productImgs.map(
+                async productImg => {
+                    if (productImg.imgUrl) {
+                        const url = parseUrl(productImg.imgUrl);
 
-    //                 const imgFullPath = await getDownloadURL(imgRef);
+                        const presigner = new S3RequestPresigner({
+                            credentials,
+                            region,
+                            sha256: Hash.bind(null, "sha256"),
+                        });
+                        const signedUrlObject = await presigner.presign(
+                            new HttpRequest(url)
+                        );
 
-    //                 productImg.imgUrl = imgFullPath;
-    //             }
-    //         );
-    //         await Promise.all(productImgsPromises);
-    //     }
-    // });
-    // await Promise.all(newpro);
+                        productImg.imgUrl = formatUrl(signedUrlObject);
+                    }
+                }
+            );
+            await Promise.all(productImgsPromises);
+        }
+    });
+    await Promise.all(newpro);
 
     res.status(200).json({
         status: "success",
@@ -104,15 +117,20 @@ const getProductById = catchAsync(async (req, res, next) => {
         where: { productId: product.id },
     });
 
-    // const productImgsPromises = productImgs.map(async productImg => {
-    //     const imgRef = ref(storage, productImg.imgUrl);
+    const productImgsPromises = productImgs.map(async productImg => {
+        const url = parseUrl(productImg.imgUrl);
 
-    //     const imgFullPath = await getDownloadURL(imgRef);
+        const presigner = new S3RequestPresigner({
+            credentials,
+            region,
+            sha256: Hash.bind(null, "sha256"),
+        });
+        const signedUrlObject = await presigner.presign(new HttpRequest(url));
 
-    //     productImg.imgUrl = imgFullPath;
-    // });
+        productImg.imgUrl = formatUrl(signedUrlObject);
+    });
 
-    // await Promise.all(productImgsPromises);
+    await Promise.all(productImgsPromises);
 
     res.status(200).json({
         status: "success",
@@ -144,4 +162,6 @@ module.exports = {
     updateProduct,
     deleteProduct,
     getProductById,
+    region,
+    credentials,
 };

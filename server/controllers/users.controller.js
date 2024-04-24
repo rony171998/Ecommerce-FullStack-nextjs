@@ -1,5 +1,3 @@
-const { ref, uploadBytes, getDownloadURL } = require("firebase/storage");
-const { storage } = require("../utils/firebase.util");
 // Models
 const { User } = require("../models/user.model");
 const { Order } = require("../models/order.model");
@@ -12,7 +10,7 @@ const { AppError } = require("../utils/appError.util");
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const dotenv = require("dotenv").config();
+const { credentials, region } = require("../controllers/products.controller");
 
 //Gen secrets for JWT, require('crypto').randomBytes(64).toString('hex')
 
@@ -38,11 +36,18 @@ const getMeProducts = catchAsync(async (req, res, next) => {
         if (product.productImgs.length > 0) {
             const productImgsPromises = product.productImgs.map(
                 async productImg => {
-                    const imgRef = ref(storage, productImg.imgUrl);
+                    const url = parseUrl(productImg.imgUrl);
 
-                    const imgFullPath = await getDownloadURL(imgRef);
+                    const presigner = new S3RequestPresigner({
+                        credentials,
+                        region,
+                        sha256: Hash.bind(null, "sha256"),
+                    });
+                    const signedUrlObject = await presigner.presign(
+                        new HttpRequest(url)
+                    );
 
-                    productImg.imgUrl = imgFullPath;
+                    productImg.imgUrl = formatUrl(signedUrlObject);
                 }
             );
             await Promise.all(productImgsPromises);
