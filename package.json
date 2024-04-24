@@ -24,6 +24,7 @@
 	},
 	"dependencies": {
 		"express-fileupload": "^1.5.0",
-		"firebase-admin": "^12.0.0"
+		"firebase-admin": "^12.0.0",
+		"notistack": "^3.0.1"
 	}
 }
