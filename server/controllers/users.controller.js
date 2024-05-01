@@ -11,6 +11,11 @@ const { AppError } = require("../utils/appError.util");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { credentials, region } = require("../controllers/products.controller");
+const { parseUrl } = require("@smithy/url-parser");
+const { S3RequestPresigner } = require("@aws-sdk/s3-request-presigner");
+const { formatUrl } = require("@aws-sdk/util-format-url");
+const { Hash } = require("@smithy/hash-node");
+const { HttpRequest } = require("@smithy/protocol-http");
 
 //Gen secrets for JWT, require('crypto').randomBytes(64).toString('hex')
 
