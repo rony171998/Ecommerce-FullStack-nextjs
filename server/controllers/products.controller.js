@@ -10,6 +10,8 @@ const { fromIni } = require("@aws-sdk/credential-provider-node");
 const { HttpRequest } = require("@smithy/protocol-http");
 const { S3RequestPresigner } = require("@aws-sdk/s3-request-presigner");
 const { formatUrl } = require("@aws-sdk/util-format-url");
+const axios = require("axios");
+
 const region = process.env.REGION;
 const credentials = {
     accessKeyId: process.env.ACCESS_KEY_ID_S3,
@@ -44,11 +46,28 @@ const createProduct = catchAsync(async (req, res, next) => {
                 Body: file.buffer,
             });
 
-            const response = await client.send(command);
+            //const response = await client.send(command);
+            // ProductImg.create({
+            //     productId: newProduct.id,
+            //     imgUrl: `https://${Bucket}.s3.${region}.amazonaws.com/${Key}`, // Guarda la URL generada en la base de datos
+            // })
 
-            await ProductImg.create({
-                productId: newProduct.id,
-                imgUrl: `https://${Bucket}.s3.${region}.amazonaws.com/${Key}`, // Guarda la URL generada en la base de datos
+            let config = {
+                method: "post",
+                maxBodyLength: Infinity,
+                url: "https://7oco9rm1ri.execute-api.us-east-2.amazonaws.com/stage-lambda",
+                headers: {
+                    "x-api-key": "EBwQLlJpYu14Xe6VcLbqe7TrouBpPBMU7Xk2rc7X",
+                    "Content-Type": file.mimetype,
+                },
+                data: file.buffer,
+            };
+
+            axios.request(config).then(response => {
+                ProductImg.create({
+                    productId: newProduct.id,
+                    imgUrl: `https://${Bucket}.s3.${region}.amazonaws.com/${response.data.key}`, // Guarda la URL generada en la base de datos
+                });
             });
         });
 
