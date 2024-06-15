@@ -5,19 +5,21 @@ const db = new Sequelize({
     dialect: "postgres",
     host: process.env.DB_HOST,
     username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
+    password: process.env.DB_PASSWORD,
     database: process.env.DB,
-    logging: false,
-    dialectOptions:
-        process.env.NODE_ENV === "production"
-            ? {
-                  ssl: {
-                      required: true,
-                      rejectUnauthorized: false,
-                  },
-              }
-            : {},
+    dbname: process.env.DB,
+    user: process.env.DB_USER,
+    // logging: false,
+    // dialectOptions:
+    //     process.env.NODE_ENV === "production"
+    //         ? {
+    //               ssl: {
+    //                   required: true,
+    //                   rejectUnauthorized: false,
+    //               },
+    //           }
+    //         : {},
 });
 
 module.exports = { db, DataTypes };
