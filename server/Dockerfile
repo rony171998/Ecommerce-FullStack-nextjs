@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:16-alpine3.16
 
 # Establece el directorio de trabajo en el contenedor
 WORKDIR /app
