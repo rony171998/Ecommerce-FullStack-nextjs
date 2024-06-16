@@ -10,16 +10,16 @@ const db = new Sequelize({
     database: process.env.DB,
     dbname: process.env.DB,
     user: process.env.DB_USER,
-    // logging: false,
-    // dialectOptions:
-    //     process.env.NODE_ENV === "production"
-    //         ? {
-    //               ssl: {
-    //                   required: true,
-    //                   rejectUnauthorized: false,
-    //               },
-    //           }
-    //         : {},
+    logging: false,
+    dialectOptions:
+        process.env.NODE_ENV === "production"
+            ? {
+                  ssl: {
+                      required: true,
+                      rejectUnauthorized: false,
+                  },
+              }
+            : {},
 });
 
 module.exports = { db, DataTypes };
