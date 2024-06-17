@@ -32,6 +32,6 @@ app.listen(PORT, HOST, () => {
             " on host " +
             HOST +
             " NODE: " +
-            process.env.production.NODE_ENV
+            process.env.NODE_ENV
     );
 });
