@@ -23,7 +23,7 @@ db.sync()
     .then(() => console.log("Db synced"))
     .catch(err => console.log(err));
 
-const PORT = 80;
+const PORT = 4000;
 const HOST = "0.0.0.0";
 app.listen(PORT, HOST, () => {
     console.log(
