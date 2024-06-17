@@ -23,8 +23,8 @@ db.sync()
     .then(() => console.log("Db synced"))
     .catch(err => console.log(err));
 
-const PORT = process.env.PORT || 4000;
-const HOST = process.env.HOST || "localhost";
+const PORT = 4000;
+const HOST = "0.0.0.0";
 app.listen(PORT, HOST, () => {
     console.log(
         "Express app running!! on port " +
@@ -32,6 +32,6 @@ app.listen(PORT, HOST, () => {
             " on host " +
             HOST +
             " NODE: " +
-            process.env.NODE_ENV
+            process.env.production.NODE_ENV
     );
 });
