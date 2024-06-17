@@ -110,9 +110,13 @@ const login = catchAsync(async (req, res, next) => {
     }
 
     // Generate JWT (JsonWebToken) ->
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-        expiresIn: "30d",
-    });
+    const token = jwt.sign(
+        { id: user.id },
+        "62186df82594edebd11416bc3cb6634d7f14b86e7f0122785eab2fe4f68557d7",
+        {
+            expiresIn: "30d",
+        }
+    );
 
     // Send response
     res.status(200).json({
