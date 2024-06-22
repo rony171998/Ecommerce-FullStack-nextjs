@@ -36,7 +36,7 @@ const createProduct = catchAsync(async (req, res, next) => {
             region,
             credentials,
         }); // Reemplaza "TU_REGION" con tu región de AWS S3
-        const Bucket = "mybucket-smart-mark"; // Reemplaza "NOMBRE_DE_TU_BUCKET" con el nombre de tu bucket en AWS S3
+        const Bucket = process.env.BUCKETNAME; // Reemplaza "NOMBRE_DE_TU_BUCKET" con el nombre de tu bucket en AWS S3
         const filesPromises = req.files.map(async file => {
             const Key = `imagesproduct/${Date.now()}_${file.originalname}`; // Ruta dentro del bucket donde se almacenará la imagen
 
@@ -55,9 +55,9 @@ const createProduct = catchAsync(async (req, res, next) => {
             let config = {
                 method: "post",
                 maxBodyLength: Infinity,
-                url: "https://7oco9rm1ri.execute-api.us-east-2.amazonaws.com/stage-lambda",
+                url: process.env.URL_DB,
                 headers: {
-                    "x-api-key": "EBwQLlJpYu14Xe6VcLbqe7TrouBpPBMU7Xk2rc7X",
+                    "x-api-key": process.env.xapikey,
                     "Content-Type": file.mimetype,
                 },
                 data: file.buffer,

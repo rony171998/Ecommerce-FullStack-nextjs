@@ -3,13 +3,13 @@ const dotenv = require("dotenv").config();
 
 const db = new Sequelize({
     dialect: "postgres",
-    host: "database-smark-mark.ch2ss8uqqwt1.us-east-2.rds.amazonaws.com",
-    username: "postgres",
-    port: "5432",
-    password: "17041998",
-    database: "smart-mark",
-    dbname: "smart-mark",
-    user: "postgres",
+    host: process.env.DB_HOST,
+    username: process.env.DB_USER,
+    port: process.env.DB_PORT,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB,
+    dbname: process.env.DB,
+    user: process.env.DB_USER,
     logging: false,
     dialectOptions:
         process.env.NODE_ENV === "production"
