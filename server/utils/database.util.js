@@ -11,15 +11,12 @@ const db = new Sequelize({
     dbname: process.env.DB,
     user: process.env.DB_USER,
     logging: false,
-    dialectOptions:
-        process.env.NODE_ENV === "production"
-            ? {
-                  ssl: {
-                      required: true,
-                      rejectUnauthorized: false,
-                  },
-              }
-            : {},
+    dialectOptions: {
+        ssl: {
+            required: true,
+            rejectUnauthorized: false,
+        },
+    },
 });
 
 module.exports = { db, DataTypes };
