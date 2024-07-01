@@ -94,6 +94,7 @@ const getAllProduct = catchAsync(async (req, res, next) => {
             {
                 model: ProductImg,
                 attributes: ["id", "imgUrl"],
+                limit: 1, // Solo traer la primera imagen
             },
         ],
     });
@@ -132,29 +133,41 @@ const getAllProduct = catchAsync(async (req, res, next) => {
 const getProductById = catchAsync(async (req, res, next) => {
     const { product } = req;
 
-    const productImgs = await ProductImg.findAll({
-        where: { productId: product.id },
+    const products = await Product.findOne({
+        where: { id: product.id },
+        include: [
+            {
+                model: ProductImg,
+                attributes: ["id", "imgUrl"],
+            },
+        ],
     });
 
-    const productImgsPromises = productImgs.map(async productImg => {
-        const url = parseUrl(productImg.imgUrl);
+    if (products.productImgs.length > 0) {
+        const productImgsPromises = products.productImgs.map(
+            async productImg => {
+                if (productImg.imgUrl) {
+                    const url = parseUrl(productImg.imgUrl);
 
-        const presigner = new S3RequestPresigner({
-            credentials,
-            region,
-            sha256: Hash.bind(null, "sha256"),
-        });
-        const signedUrlObject = await presigner.presign(new HttpRequest(url));
+                    const presigner = new S3RequestPresigner({
+                        credentials,
+                        region,
+                        sha256: Hash.bind(null, "sha256"),
+                    });
+                    const signedUrlObject = await presigner.presign(
+                        new HttpRequest(url)
+                    );
 
-        productImg.imgUrl = formatUrl(signedUrlObject);
-    });
-
-    await Promise.all(productImgsPromises);
+                    productImg.imgUrl = formatUrl(signedUrlObject);
+                }
+            }
+        );
+        await Promise.all(productImgsPromises);
+    }
 
     res.status(200).json({
         status: "success",
-        product,
-        productImgs,
+        products,
     });
 });
 
