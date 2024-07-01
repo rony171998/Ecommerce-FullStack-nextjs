@@ -1,7 +1,7 @@
-const { ProductsinCart } = require("../models/productsinCart.model");
 const { Product } = require("../models/product.model");
 const { Cart } = require("../models/cart.model");
 const { Order } = require("../models/order.model");
+const { ProductsinCart } = require("../models/productsinCart.model");
 
 const { catchAsync } = require("../utils/catchAsync.util");
 const { AppError } = require("../utils/appError.util");
@@ -36,11 +36,12 @@ const createproductsinCart = catchAsync(async (req, res, next) => {
                 400
             )
         );
-    }
+    } 
 
     const cart = await Cart.findOne({
         where: { status: "active", userId: sessionUser.id },
     });
+    console.log(JSON.stringify(cart))
 
     if (!cart) {
         const newCart = await Cart.create({ userId: sessionUser.id });
@@ -71,38 +72,9 @@ const getAllproductsinCart = catchAsync(async (req, res, next) => {
         include: [
             {
                 model: Product,
-                include: [
-                    {
-                        model: ProductImg,
-                        attributes: ["id", "imgUrl"],
-                        limit: 1, // Traer solo la primera imagen
-                    },
-                ],
             },
         ],
     });
-
-    const newProdsInCart = productsinCarts.map(async productInCart => {
-        const product = productInCart.Product;
-        if (product.ProductImgs.length > 0) {
-            const productImg = product.ProductImgs[0]; // Solo la primera imagen
-            if (productImg.imgUrl) {
-                const url = parseUrl(productImg.imgUrl);
-                const presigner = new S3RequestPresigner({
-                    credentials,
-                    region,
-                    sha256: Hash.bind(null, "sha256"),
-                });
-                const signedUrlObject = await presigner.presign(
-                    new HttpRequest(url)
-                );
-                productImg.imgUrl = formatUrl(signedUrlObject);
-            }
-        }
-        return productInCart;
-    });
-
-    await Promise.all(newProdsInCart);
 
     res.status(200).json({
         status: "success",
@@ -118,7 +90,6 @@ const getPurchases = catchAsync(async (req, res, next) => {
         include: [
             {
                 model: Cart,
-
                 include: [
                     { model: ProductsinCart, include: [{ model: Product }] },
                 ],
