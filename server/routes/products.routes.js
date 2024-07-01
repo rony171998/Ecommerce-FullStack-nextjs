@@ -33,6 +33,8 @@ const productsRouter = express.Router();
 
 productsRouter.get("/", getAllProduct);
 
+productsRouter.use("/:id", productExists).route("/:id").get(getProductById);
+
 productsRouter.get("/categories", getAllCategories);
 
 productsRouter.get("/categories/:id", categoryExists, getCategoriesbyid);
@@ -57,7 +59,6 @@ productsRouter.delete("/categories/:id", categoryExists, deleteCategories);
 productsRouter
     .use("/:id", productExists)
     .route("/:id")
-    .get(getProductById)
     .patch(protectProductAccount, updateProduct)
     .delete(protectProductAccount, deleteProduct);
 
