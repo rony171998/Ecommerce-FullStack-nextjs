@@ -17,7 +17,6 @@ const { globalErrorHandler } = require('./controllers/error.controller');
 // Utils
 const { AppError } = require('./utils/appError.util');
 
-
 const app = express();
 
 app.use(express.json()) 
@@ -42,7 +41,21 @@ if (process.env.NODE_ENV === 'development') {
 }else{
 	app.use(morgan('tiny'));
 }
-app.use(cors());
+
+// Lista blanca de orígenes permitidos
+const whitelist = ['https://smart-marked.netlify.app', 'http://localhost:3000'];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  }
+};
+
+app.use(cors(corsOptions));
 
 app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/products', productsRouter); 
@@ -54,11 +67,6 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
     res.status(200).send('OK');
 });
-
-
-// Enable CORS
-
-
 
 //Handle incoming unknown routes to the server
 app.all('*', (req, res, next) => {
