@@ -24,10 +24,8 @@ const protectSession = catchAsync(async (req, res, next) => {
     }
 
     // Ask JWT (library), if the token is still valid
-    const decoded = await jwt.verify(
-        token,
-        "62186df82594edebd11416bc3cb6634d7f14b86e7f0122785eab2fe4f68557d7"
-    );
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
     // { id, ... }
 
     // Check in db that user still exists
