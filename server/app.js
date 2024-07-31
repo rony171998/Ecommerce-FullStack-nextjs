@@ -43,7 +43,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Lista blanca de orígenes permitidos
-const whitelist = ['https://smart-marked.netlify.app', 'http://localhost:3000'];
+const whitelist = ['https://smart-marked.netlify.app', 'http://localhost:3000','https://monorepo-smart-mark-client.vercel.app'];
 
 const corsOptions = {
   origin: function (origin, callback) {
